@@ -43,7 +43,8 @@
       <button id="start">▶ Mulai kamera</button>
       <button class="ghost" id="stop">⏹ Berhenti</button>
     </div>
-    <div class="muted" style="margin-top:10px">Tidak bisa pakai kamera? Tempel isi QR di bawah lalu tekan Periksa.</div>
+    <div class="muted" id="camstatus" style="margin-top:8px"></div>
+    <div class="muted" style="margin-top:8px">Tidak bisa pakai kamera? Tempel isi QR di bawah lalu tekan Periksa.</div>
     <textarea id="paste" placeholder='{"n":"...","k":"...","lv":1,"tgl":"...","skor":40,"sig":"..."}'></textarea>
     <button class="ghost" id="check" style="margin-top:8px">Periksa teks</button>
   </div>
@@ -97,24 +98,54 @@ async function handlePayload(text) {
   catch (e) { if (e.message === 'nokey') $('nokey').style.display = 'block'; }
 }
 
-// ---- kamera + jsQR ----
-let stream = null, raf = null;
+// ---- kamera + pembaca QR (BarcodeDetector bawaan > jsQR cadangan) ----
+let stream = null, raf = null, detector = null, scanning = false;
+const setStatus = (t) => { const el = $('camstatus'); if (el) el.textContent = t; };
+
 async function startCam() {
+  setStatus('Membuka kamera…');
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-    const v = $('video'); v.srcObject = stream; await v.play(); scanLoop();
-  } catch (e) { alert('Tidak bisa mengakses kamera. Gunakan kotak tempel di bawah.'); }
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
+  } catch (e) { setStatus('Kamera tak bisa diakses (' + e.name + '). Pakai kotak tempel di bawah.'); return; }
+  const v = $('video');
+  v.srcObject = stream; v.setAttribute('playsinline', ''); v.muted = true;
+  try { await v.play(); } catch (e) {}
+  detector = null;
+  if ('BarcodeDetector' in window) {
+    try {
+      const fmts = await window.BarcodeDetector.getSupportedFormats();
+      if (fmts.includes('qr_code')) detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+    } catch (e) {}
+  }
+  if (!detector && !window.jsQR) { setStatus('Pembaca QR gagal dimuat. Pakai kotak tempel di bawah.'); return; }
+  setStatus('Arahkan kamera ke QR sertifikat…');
+  scanning = true; scanLoop();
 }
-function stopCam() { if (raf) cancelAnimationFrame(raf); if (stream) stream.getTracks().forEach((t) => t.stop()); stream = null; }
-function scanLoop() {
-  const v = $('video'), c = $('canvas');
-  if (!stream) return;
+
+function stopCam() {
+  scanning = false;
+  if (raf) cancelAnimationFrame(raf);
+  if (stream) stream.getTracks().forEach((t) => t.stop());
+  stream = null;
+}
+
+async function scanLoop() {
+  if (!scanning) return;
+  const v = $('video');
   if (v.readyState === v.HAVE_ENOUGH_DATA) {
-    c.width = v.videoWidth; c.height = v.videoHeight;
-    const ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0, c.width, c.height);
-    const img = ctx.getImageData(0, 0, c.width, c.height);
-    const code = window.jsQR && jsQR(img.data, img.width, img.height);
-    if (code && code.data) { stopCam(); handlePayload(code.data); return; }
+    try {
+      if (detector) {
+        const codes = await detector.detect(v);
+        if (codes && codes.length) { stopCam(); setStatus('QR terbaca ✔'); handlePayload(codes[0].rawValue); return; }
+      } else if (window.jsQR) {
+        const c = $('canvas');
+        c.width = v.videoWidth; c.height = v.videoHeight;
+        const ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0, c.width, c.height);
+        const img = ctx.getImageData(0, 0, c.width, c.height);
+        const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+        if (code && code.data) { stopCam(); setStatus('QR terbaca ✔'); handlePayload(code.data); return; }
+      }
+    } catch (e) { /* lanjutkan loop */ }
   }
   raf = requestAnimationFrame(scanLoop);
 }
