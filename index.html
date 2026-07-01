@@ -136,6 +136,7 @@
     <div class="card">
       <div class="score" id="score"></div>
       <div class="banner" id="banner"></div>
+      <div class="muted" id="recnote" style="text-align:center;margin-top:2px"></div>
       <div class="center" style="margin-top:10px">
         <button class="ghost" id="toggle-rev">Lihat pembahasan</button>
         <button id="cert-go" style="display:none">Lihat Sertifikat</button>
@@ -296,7 +297,7 @@
     if (CFG.workerUrl) {                              // mode server: dinilai & sertifikat ditandatangani server
       const res = await api('submit', { level: state.level, seed: state.seed, nama: state.nama, kelas: state.kelas, answers: collect() });
       if (!res.ok) { alert(res.error || 'Gagal mengumpulkan jawaban.'); return; }
-      result = res.result; certificate = res.certificate;
+      result = res.result; certificate = res.certificate; state.recorded = !!res.recorded;
     } else {                                          // mode lokal: dinilai di browser
       result = window['LEVEL'+state.level].gradeTest(state.seed, collect());
     }
@@ -311,6 +312,7 @@
     if (result.passed){ b.className='banner pass'; b.textContent = `🎉 LULUS Level ${state.level}! (batas lulus 30)`; state.done.add(state.level); $('cert-go').style.display=''; }
     else { b.className='banner fail'; b.textContent = `Belum lulus (butuh 30, kamu benar ${result.correctCount}). Coba lagi bulan depan.`; $('cert-go').style.display='none'; }
     if (auto) b.textContent = '⏰ Waktu habis. ' + b.textContent;
+    $('recnote').textContent = (result.passed && state.recorded) ? '✓ Hasil sudah dikirim & tercatat di admin sekolah.' : '';
     // review
     const rev = $('review'); rev.innerHTML=''; rev.style.display='none'; $('toggle-rev').textContent='Lihat pembahasan';
     const byId = {}; state.sent.questions.forEach(q => byId[q.id]=q);
