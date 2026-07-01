@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Level Up — MTs Sains Algebra</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+  :root{
+    --bg:#eef1f5; --card:#fff; --ink:#1f2933; --muted:#6b7785; --line:#e3e8ee;
+    --accent:#2563eb; --accent-bg:#eaf1ff; --green:#1a7f4b; --green-bg:#e7f6ed;
+    --red:#c0392b; --red-bg:#fdecea; --amber:#a15c00; --amber-bg:#fff8ef;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink);line-height:1.55}
+  .wrap{max-width:840px;margin:0 auto;padding:20px}
+  .screen{display:none} .screen.on{display:block}
+  h1{font-size:22px;margin:0 0 4px} h2{font-size:18px;margin:0 0 4px}
+  .muted{color:var(--muted)} .center{text-align:center}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+  label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+  input[type=text],input[type=password]{width:100%;padding:11px 13px;border:1px solid var(--line);
+        border-radius:9px;font-size:15px;font-family:inherit;background:#fff}
+  button{cursor:pointer;border:none;border-radius:10px;font-size:15px;font-weight:600;padding:12px 18px;
+         font-family:inherit;background:var(--accent);color:#fff}
+  button.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  button.wide{width:100%;margin-top:18px}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .err{color:var(--red);font-size:13.5px;margin-top:10px;min-height:1.2em}
+  .brand{display:flex;flex-direction:column;align-items:center;gap:2px;margin:36px 0 20px}
+  .logo{width:56px;height:56px;border-radius:14px;background:var(--accent);color:#fff;display:flex;
+        align-items:center;justify-content:center;font-weight:800;font-size:24px}
+  /* menu */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+  .lvl{display:flex;gap:12px;align-items:center;text-align:left;background:#fff;border:1px solid var(--line);
+       border-radius:12px;padding:14px;color:var(--ink);font-weight:500}
+  .lvl:hover{border-color:var(--accent);background:var(--accent-bg)}
+  .lvl .no{flex:none;width:38px;height:38px;border-radius:10px;background:var(--accent-bg);color:var(--accent);
+        font-weight:800;display:flex;align-items:center;justify-content:center}
+  .lvl .t{font-size:14px} .lvl .s{font-size:12px;color:var(--muted);font-weight:400}
+  .lvl.done .no{background:var(--green-bg);color:var(--green)}
+  /* test */
+  .topbar{position:sticky;top:0;z-index:10;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line);
+        display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:16px;background:#fff;border:1px solid var(--line);
+        border-radius:9px;padding:6px 12px}
+  .timer.warn{color:var(--red);border-color:#f3c3bd;background:var(--red-bg)}
+  .prog{font-size:13px;color:var(--muted);margin-left:auto}
+  .q{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-top:12px}
+  .qhead{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .qnum{font-weight:700}
+  .badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px}
+  .badge.pg{background:var(--accent-bg);color:var(--accent)}
+  .badge.isi{background:#fff4e5;color:var(--amber)}
+  .stem{font-size:15px;margin-bottom:10px}.stem.math{font-variant-numeric:tabular-nums;font-size:16px}
+  .opts{display:grid;gap:8px}
+  .opt{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:9px 12px;cursor:pointer}
+  .opt:hover{background:#f6f8fb}.opt input{accent-color:var(--accent)}
+  .isian{display:flex;align-items:center;gap:8px}
+  .isian input{width:150px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-size:15px}
+  .unit{color:var(--muted)}
+  .hint{margin-top:8px;font-size:12.5px;color:var(--amber);background:var(--amber-bg);border:1px solid #f0e2cc;
+        border-radius:7px;padding:5px 9px;display:inline-block}
+  /* result */
+  .score{font-size:44px;font-weight:800;text-align:center;margin:6px 0}
+  .banner{border-radius:12px;padding:14px 16px;text-align:center;font-weight:700;margin:10px 0 4px}
+  .banner.pass{background:var(--green-bg);color:var(--green)}
+  .banner.fail{background:var(--red-bg);color:var(--red)}
+  .rev{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:10px;font-size:14px}
+  .rev .rq{color:var(--muted);font-size:13px}
+  .rev.ok{border-left:4px solid var(--green)} .rev.no{border-left:4px solid var(--red)}
+  .tag{font-size:12px;font-weight:700}.tag.ok{color:var(--green)}.tag.no{color:var(--red)}
+  /* cert */
+  .cert{border:2px solid var(--accent);border-radius:16px;padding:26px;text-align:center;background:#fff}
+  .cert .kop{font-size:12px;letter-spacing:.5px;color:var(--muted);text-transform:uppercase}
+  .cert .nm{font-size:24px;font-weight:800;margin:8px 0 2px}
+  .cert .lvl2{display:inline-block;background:var(--accent-bg);color:var(--accent);font-weight:700;
+        padding:4px 14px;border-radius:999px;margin:8px 0}
+  #qr{width:150px;height:150px;margin:14px auto 4px}#qr img{width:150px;height:150px}
+  .note{font-size:11.5px;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 1. GERBANG PASSWORD -->
+  <section id="s-gate" class="screen on">
+    <div class="brand"><div class="logo">M</div><h1>Math Level Up</h1><div class="muted">MTs Sains Algebra</div></div>
+    <div class="card">
+      <h2>Masuk Ujian</h2>
+      <p class="muted" style="font-size:13.5px">Masukkan password yang diberikan pengawas pada hari ujian.</p>
+      <label>Password</label>
+      <input id="pw" type="password" autocomplete="off" placeholder="Contoh: ALG1234">
+      <div class="err" id="pw-err"></div>
+      <button class="wide" id="pw-go">Masuk</button>
+    </div>
+  </section>
+
+  <!-- 2. DATA DIRI -->
+  <section id="s-data" class="screen">
+    <div class="brand"><div class="logo">M</div><h1>Data Diri</h1></div>
+    <div class="card">
+      <p class="muted" style="font-size:13.5px">Isi namamu dengan benar. Data ini dipakai untuk sertifikat.</p>
+      <label>Nama lengkap</label>
+      <input id="nm" type="text" placeholder="Nama lengkap">
+      <label>Kelas</label>
+      <input id="kl" type="text" placeholder="Contoh: 7A">
+      <div class="err" id="data-err"></div>
+      <button class="wide" id="data-go">Lanjut</button>
+    </div>
+  </section>
+
+  <!-- 3. MENU LEVEL -->
+  <section id="s-menu" class="screen">
+    <h1 id="hi">Halo!</h1>
+    <p class="muted">Pilih level yang ingin kamu kerjakan. Tiap level 40 soal, waktu 1 jam, lulus jika benar minimal 30.</p>
+    <div class="grid" id="menu-grid"></div>
+  </section>
+
+  <!-- 4. LAYAR TES -->
+  <section id="s-test" class="screen">
+    <div class="topbar">
+      <strong id="test-title"></strong>
+      <span class="timer" id="timer">60:00</span>
+      <span class="prog" id="prog">0/40 terjawab</span>
+    </div>
+    <div id="test-list"></div>
+    <button class="wide" id="submit-go" style="margin:18px 0 40px">Kumpulkan Jawaban</button>
+  </section>
+
+  <!-- 5. HASIL -->
+  <section id="s-result" class="screen">
+    <h1>Hasil Ujian</h1>
+    <div class="card">
+      <div class="score" id="score"></div>
+      <div class="banner" id="banner"></div>
+      <div class="center" style="margin-top:10px">
+        <button class="ghost" id="toggle-rev">Lihat pembahasan</button>
+        <button id="cert-go" style="display:none">Lihat Sertifikat</button>
+      </div>
+    </div>
+    <div id="review" style="display:none"></div>
+    <button class="ghost wide" id="back-menu" style="margin:18px 0 40px">Kembali ke menu</button>
+  </section>
+
+  <!-- 6. SERTIFIKAT -->
+  <section id="s-cert" class="screen">
+    <h1 class="center">Sertifikat Kelulusan</h1>
+    <div class="cert" id="cert-card">
+      <div class="kop">Math Level Up · MTs Sains Algebra</div>
+      <div class="muted" style="font-size:13px;margin-top:12px">Diberikan kepada</div>
+      <div class="nm" id="c-nm"></div>
+      <div class="muted" id="c-kl" style="font-size:13px"></div>
+      <div class="lvl2" id="c-lvl"></div>
+      <div class="muted" id="c-info" style="font-size:13px"></div>
+      <div id="qr"></div>
+      <div class="muted" style="font-size:11px">Pindai untuk verifikasi</div>
+      <div class="note" id="c-note"></div>
+    </div>
+    <button class="ghost wide" id="cert-back" style="margin:18px 0 40px">Kembali ke menu</button>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  const TOPICS = ['Penjumlahan & pengurangan bilangan bulat','Perkalian & pembagian bilangan bulat',
+    'Kombinasi operasi (urutan operasi)','Pecahan, desimal, & persen','Penjumlahan & pengurangan pecahan',
+    'Perkalian & pembagian pecahan','KPK & FPB','Perbandingan','Bangun datar & bangun ruang','Aljabar dasar'];
+  const DURATION = 60 * 60; // detik
+  const pretty = (s) => String(s).replace(/-/g, '−');
+  const $ = (id) => document.getElementById(id);
+  const show = (id) => { document.querySelectorAll('.screen').forEach(s => s.classList.remove('on')); $(id).classList.add('on'); window.scrollTo(0,0); };
+
+  // KONFIG: workerUrl '' = mode lokal (generator di browser, utk uji coba).
+  // Isi URL Worker (mis. "https://mlu.namamu.workers.dev") untuk mode server
+  // yang aman — di mode ini, hapus juga tag <script> generator & password.js
+  // di atas agar kunci jawaban tak ikut ke perangkat siswa.
+  const CFG = { workerUrl: '' }; // <-- ISI URL Worker Cloudflare setelah deploy, mis. https://mlu.namamu.workers.dev
+  if (!CFG.workerUrl) { document.body.innerHTML = '<div style="max-width:520px;margin:60px auto;padding:30px;font-family:sans-serif;text-align:center;color:#1f2933"><h2>Aplikasi belum dikonfigurasi</h2><p style="color:#6b7785">URL server belum diisi. Hubungi admin sekolah.</p></div>'; return; }
+  const state = { nama:'', kelas:'', level:0, seed:0, sent:null, password:'', certificate:null, done:new Set(), timer:null };
+  window.__mlu = state; window.__cfg = CFG; // untuk pengujian
+  async function api(path, obj){
+    const res = await fetch(CFG.workerUrl.replace(/\/$/,'') + '/' + path,
+      { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(obj) });
+    const j = await res.json().catch(() => ({ ok:false, error:'Respons server tidak valid' }));
+    j.status = res.status; return j;
+  }
+
+  // ---- 1. Gerbang password ----
+  $('pw-go').onclick = () => {
+    const val = $('pw').value.trim();
+    if (!val) { $('pw-err').textContent = 'Masukkan password.'; return; }
+    state.password = val;
+    if (CFG.workerUrl) { $('pw-err').textContent=''; show('s-data'); return; } // divalidasi server saat mulai level
+    if (val === MLUPW.passwordForDate(new Date())) { $('pw-err').textContent=''; show('s-data'); }
+    else $('pw-err').textContent = 'Password salah. Minta password terbaru kepada pengawas.';
+  };
+  $('pw').addEventListener('keydown', e => { if(e.key==='Enter') $('pw-go').click(); });
+
+  // ---- 2. Data diri ----
+  $('data-go').onclick = () => {
+    const nm = $('nm').value.trim(), kl = $('kl').value.trim();
+    if (!nm || !kl) { $('data-err').textContent = 'Nama dan kelas wajib diisi.'; return; }
+    state.nama = nm; state.kelas = kl; $('data-err').textContent='';
+    $('hi').textContent = `Halo, ${nm} (${kl})`;
+    buildMenu(); show('s-menu');
+  };
+
+  // ---- 3. Menu ----
+  function buildMenu(){
+    const g = $('menu-grid'); g.innerHTML='';
+    for (let lv=1; lv<=10; lv++){
+      const b = document.createElement('button');
+      b.className = 'lvl' + (state.done.has(lv)?' done':'');
+      b.innerHTML = `<span class="no">${state.done.has(lv)?'✓':lv}</span>
+        <span><span class="t">Level ${lv}</span><br><span class="s">${TOPICS[lv-1]}</span></span>`;
+      b.onclick = () => startLevel(lv);
+      g.appendChild(b);
+    }
+  }
+
+  // ---- 4. Tes ----
+  async function startLevel(lv){
+    state.level = lv;
+    if (CFG.workerUrl) {                             // mode server: ambil soal dari Worker
+      const res = await api('start', { password: state.password, level: lv });
+      if (!res.ok) { alert(res.error || 'Gagal memulai ujian.'); if (res.status === 403) show('s-gate'); return; }
+      state.seed = res.seed; state.sent = res.test;
+    } else {                                         // mode lokal: generator di browser
+      state.seed = (Math.random() * 4294967295) >>> 0;
+      const L = window['LEVEL'+lv];
+      state.sent = L.stripAnswers(L.generateTest(state.seed)); // soal tanpa kunci
+    }
+    $('test-title').textContent = `Level ${lv} — ${TOPICS[lv-1]}`;
+    renderTest(state.sent);
+    show('s-test'); startTimer();
+  }
+
+  function renderTest(sent){
+    const list = $('test-list'); list.innerHTML='';
+    sent.questions.forEach((q,i) => {
+      const isMath = /^Hasil dari|^FPB |^KPK |^Nilai n|^Bentuk /.test(q.stem);
+      const card = document.createElement('div'); card.className='q';
+      let h = `<div class="qhead"><span class="qnum">${i+1}.</span>
+        <span class="badge ${q.type==='mcq'?'pg':'isi'}">${q.type==='mcq'?'Pilihan ganda':'Isian'}</span></div>
+        <div class="stem ${isMath?'math':''}">${pretty(q.stem)}</div>`;
+      if (q.type==='mcq'){
+        h += '<div class="opts">' + q.choices.map(c =>
+          `<label class="opt"><input type="radio" name="${q.id}" value="${c.letter}"><span><b>${c.letter}.</b> ${pretty(c.value)}</span></label>`).join('') + '</div>';
+      } else {
+        h += `<div class="isian"><input type="text" inputmode="text" data-q="${q.id}" autocomplete="off">${q.unit?`<span class="unit">${pretty(q.unit)}</span>`:''}</div>`;
+        if (q.hint) h += `<div class="hint">💡 ${q.hint}</div>`;
+      }
+      card.innerHTML = h; list.appendChild(card);
+    });
+    list.addEventListener('input', updateProgress);
+    list.addEventListener('change', updateProgress);
+    updateProgress();
+  }
+
+  function collect(){
+    const r = {};
+    state.sent.questions.forEach(q => {
+      if (q.type==='mcq'){ const sel = document.querySelector(`input[name="${q.id}"]:checked`); if(sel) r[q.id]=sel.value; }
+      else { const inp = document.querySelector(`input[data-q="${q.id}"]`); if(inp && inp.value.trim()!=='') r[q.id]=inp.value.trim(); }
+    });
+    return r;
+  }
+  function updateProgress(){ const n = Object.keys(collect()).length; $('prog').textContent = `${n}/40 terjawab`; }
+
+  function startTimer(){
+    const end = Date.now() + DURATION*1000;
+    clearInterval(state.timer);
+    const tick = () => {
+      let s = Math.round((end - Date.now())/1000); if (s<0) s=0;
+      const mm = String(Math.floor(s/60)).padStart(2,'0'), ss = String(s%60).padStart(2,'0');
+      $('timer').textContent = `${mm}:${ss}`;
+      $('timer').classList.toggle('warn', s <= 300);
+      if (s<=0){ clearInterval(state.timer); doSubmit(true); }
+    };
+    tick(); state.timer = setInterval(tick, 1000);
+  }
+
+  $('submit-go').onclick = () => {
+    const answered = Object.keys(collect()).length;
+    if (answered < 40 && !confirm(`Baru ${answered}/40 soal terjawab. Yakin kumpulkan sekarang?`)) return;
+    doSubmit(false);
+  };
+
+  async function doSubmit(auto){
+    clearInterval(state.timer);
+    let result, certificate = null;
+    if (CFG.workerUrl) {                              // mode server: dinilai & sertifikat ditandatangani server
+      const res = await api('submit', { level: state.level, seed: state.seed, nama: state.nama, kelas: state.kelas, answers: collect() });
+      if (!res.ok) { alert(res.error || 'Gagal mengumpulkan jawaban.'); return; }
+      result = res.result; certificate = res.certificate;
+    } else {                                          // mode lokal: dinilai di browser
+      result = window['LEVEL'+state.level].gradeTest(state.seed, collect());
+    }
+    state.certificate = certificate;
+    showResult(result, auto);
+  }
+
+  // ---- 5. Hasil ----
+  function showResult(result, auto){
+    $('score').textContent = `${result.correctCount} / 40`;
+    const b = $('banner');
+    if (result.passed){ b.className='banner pass'; b.textContent = `🎉 LULUS Level ${state.level}! (batas lulus 30)`; state.done.add(state.level); $('cert-go').style.display=''; }
+    else { b.className='banner fail'; b.textContent = `Belum lulus (butuh 30, kamu benar ${result.correctCount}). Coba lagi bulan depan.`; $('cert-go').style.display='none'; }
+    if (auto) b.textContent = '⏰ Waktu habis. ' + b.textContent;
+    // review
+    const rev = $('review'); rev.innerHTML=''; rev.style.display='none'; $('toggle-rev').textContent='Lihat pembahasan';
+    const byId = {}; state.sent.questions.forEach(q => byId[q.id]=q);
+    result.details.forEach((d,i) => {
+      const q = byId[d.id];
+      const correctTxt = d.type==='mcq' ? `${d.answerLetter}` : pretty(String(d.correct));
+      const givenTxt = d.given==null ? '(kosong)' : pretty(String(d.given));
+      const el = document.createElement('div'); el.className = 'rev ' + (d.ok?'ok':'no');
+      el.innerHTML = `<div class="rq">${i+1}. ${pretty(q.stem)}</div>
+        <div><span class="tag ${d.ok?'ok':'no'}">${d.ok?'✓ Benar':'✗ Salah'}</span>
+        &nbsp; Jawabanmu: <b>${givenTxt}</b>${d.ok?'':` &nbsp;·&nbsp; Kunci: <b>${correctTxt}</b>`}</div>`;
+      rev.appendChild(el);
+    });
+    show('s-result');
+  }
+  $('toggle-rev').onclick = () => { const r=$('review'); const on = r.style.display!=='none'; r.style.display = on?'none':'block'; $('toggle-rev').textContent = on?'Lihat pembahasan':'Sembunyikan pembahasan'; };
+  $('back-menu').onclick = () => { buildMenu(); show('s-menu'); };
+
+  // ---- 6. Sertifikat ----
+  $('cert-go').onclick = () => {
+    const signed = state.certificate; // dari server (bertanda tangan) bila ada
+    const tgl = signed ? signed.tgl : new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+    $('c-nm').textContent = state.nama;
+    $('c-kl').textContent = `Kelas ${state.kelas}`;
+    $('c-lvl').textContent = `✔ Lulus Level ${state.level}`;
+    $('c-info').textContent = `${TOPICS[state.level-1]} · ${tgl}`;
+    $('c-note').textContent = signed
+      ? 'Sertifikat ini bertanda tangan digital dan dapat diverifikasi dengan aplikasi scanner.'
+      : 'Prototipe lokal: tanda tangan digital ditambahkan saat platform tersambung ke server.';
+    const payload = JSON.stringify(signed || { n:state.nama, k:state.kelas, lv:state.level, tgl, skor:'-' });
+    const box = $('qr'); box.innerHTML='';
+    try { const qr = qrcode(0,'M'); qr.addData(payload); qr.make(); box.innerHTML = qr.createImgTag(4,0); }
+    catch(e){ box.innerHTML = '<div class="muted" style="font-size:11px">[QR]</div>'; }
+    show('s-cert');
+  };
+  $('cert-back').onclick = () => { buildMenu(); show('s-menu'); };
+})();
+</script>
+</body>
+</html>
