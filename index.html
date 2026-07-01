@@ -89,12 +89,12 @@
   <section id="s-gate" class="screen on">
     <div class="brand"><div class="logo">M</div><h1>Math Level Up</h1><div class="muted">MTs Sains Algebra</div></div>
     <div class="card">
-      <h2>Masuk Ujian</h2>
-      <p class="muted" style="font-size:13.5px">Masukkan password yang diberikan pengawas pada hari ujian.</p>
-      <label>Password</label>
-      <input id="pw" type="password" autocomplete="off" placeholder="Contoh: ALG1234">
+      <h2>Kode Akses Ujian</h2>
+      <p class="muted" style="font-size:13.5px">Aplikasi sertifikasi matematika MTs Sains Algebra. Masukkan kode akses yang diberikan pengawas pada hari ujian.</p>
+      <label>Kode akses</label>
+      <input id="pw" type="text" inputmode="text" autocomplete="off" placeholder="Contoh: ALG1234">
       <div class="err" id="pw-err"></div>
-      <button class="wide" id="pw-go">Masuk</button>
+      <button class="wide" id="pw-go">Mulai</button>
     </div>
   </section>
 
@@ -192,7 +192,7 @@
   // ---- 1. Gerbang password ----
   $('pw-go').onclick = () => {
     const val = $('pw').value.trim();
-    if (!val) { $('pw-err').textContent = 'Masukkan password.'; return; }
+    if (!val) { $('pw-err').textContent = 'Masukkan kode akses.'; return; }
     state.password = val;
     if (CFG.workerUrl) { $('pw-err').textContent=''; show('s-data'); return; } // divalidasi server saat mulai level
     if (val === MLUPW.passwordForDate(new Date())) { $('pw-err').textContent=''; show('s-data'); }
