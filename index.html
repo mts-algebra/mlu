@@ -178,7 +178,7 @@
   // Isi URL Worker (mis. "https://mlu.namamu.workers.dev") untuk mode server
   // yang aman — di mode ini, hapus juga tag <script> generator & password.js
   // di atas agar kunci jawaban tak ikut ke perangkat siswa.
-  const CFG = { workerUrl: 'mlu.mtsalgebrasorong.workers.dev' }; // <-- ISI URL Worker Cloudflare setelah deploy, mis. https://mlu.namamu.workers.dev
+  const CFG = { workerUrl: 'https://mlu.mtsalgebrasorong.workers.dev' }; // <-- ISI URL Worker Cloudflare setelah deploy, mis. https://mlu.namamu.workers.dev
   if (!CFG.workerUrl) { document.body.innerHTML = '<div style="max-width:520px;margin:60px auto;padding:30px;font-family:sans-serif;text-align:center;color:#1f2933"><h2>Aplikasi belum dikonfigurasi</h2><p style="color:#6b7785">URL server belum diisi. Hubungi admin sekolah.</p></div>'; return; }
   const state = { nama:'', kelas:'', level:0, seed:0, sent:null, password:'', certificate:null, done:new Set(), timer:null };
   window.__mlu = state; window.__cfg = CFG; // untuk pengujian
