@@ -85,38 +85,28 @@
 <body>
 <div class="wrap">
 
-  <!-- 1. GERBANG PASSWORD -->
-  <section id="s-gate" class="screen on">
+  <!-- 1. HOME — MENU LEVEL -->
+  <section id="s-menu" class="screen on">
     <div class="brand"><div class="logo">M</div><h1>Math Level Up</h1><div class="muted">MTs Sains Algebra</div></div>
-    <div class="card">
-      <h2>Kode Akses Ujian</h2>
-      <p class="muted" style="font-size:13.5px">Aplikasi sertifikasi matematika MTs Sains Algebra. Masukkan kode akses yang diberikan pengawas pada hari ujian.</p>
-      <label>Kode akses</label>
-      <input id="pw" type="text" inputmode="numeric" autocomplete="off" placeholder="6 angka, mis. 482913">
-      <div class="err" id="pw-err"></div>
-      <button class="wide" id="pw-go">Mulai</button>
-    </div>
-  </section>
-
-  <!-- 2. DATA DIRI -->
-  <section id="s-data" class="screen">
-    <div class="brand"><div class="logo">M</div><h1>Data Diri</h1></div>
-    <div class="card">
-      <p class="muted" style="font-size:13.5px">Isi namamu dengan benar. Data ini dipakai untuk sertifikat.</p>
-      <label>Nama lengkap</label>
-      <input id="nm" type="text" placeholder="Nama lengkap">
-      <label>Kelas</label>
-      <input id="kl" type="text" placeholder="Contoh: 7A">
-      <div class="err" id="data-err"></div>
-      <button class="wide" id="data-go">Lanjut</button>
-    </div>
-  </section>
-
-  <!-- 3. MENU LEVEL -->
-  <section id="s-menu" class="screen">
-    <h1 id="hi">Halo!</h1>
     <p class="muted">Pilih level yang ingin kamu kerjakan. Tiap level 40 soal, waktu 1 jam, lulus jika benar minimal 30.</p>
     <div class="grid" id="menu-grid"></div>
+  </section>
+
+  <!-- 2. MULAI LEVEL — kode akses + data diri -->
+  <section id="s-start" class="screen">
+    <div class="card">
+      <h2 id="start-title">Level</h2>
+      <p class="muted" style="font-size:13.5px">Masukkan kode akses dari pengawas, lalu isi datamu. Data ini dipakai untuk sertifikat.</p>
+      <label>Kode akses</label>
+      <input id="pw" type="text" inputmode="numeric" autocomplete="off" placeholder="6 angka, mis. 482913">
+      <label>Nama lengkap</label>
+      <input id="nm" type="text" autocomplete="off" placeholder="Nama lengkap">
+      <label>Kelas</label>
+      <input id="kl" type="text" autocomplete="off" placeholder="Contoh: 9A">
+      <div class="err" id="start-err"></div>
+      <button class="wide" id="start-go">Mulai Ujian</button>
+      <button class="ghost wide" id="start-back" style="margin-top:8px">← Kembali ke menu</button>
+    </div>
   </section>
 
   <!-- 4. LAYAR TES -->
@@ -190,27 +180,7 @@
     j.status = res.status; return j;
   }
 
-  // ---- 1. Gerbang password ----
-  $('pw-go').onclick = () => {
-    const val = $('pw').value.trim();
-    if (!val) { $('pw-err').textContent = 'Masukkan kode akses.'; return; }
-    state.password = val;
-    if (CFG.workerUrl) { $('pw-err').textContent=''; show('s-data'); return; } // divalidasi server saat mulai level
-    if (val === MLUPW.passwordForDate(new Date())) { $('pw-err').textContent=''; show('s-data'); }
-    else $('pw-err').textContent = 'Password salah. Minta password terbaru kepada pengawas.';
-  };
-  $('pw').addEventListener('keydown', e => { if(e.key==='Enter') $('pw-go').click(); });
-
-  // ---- 2. Data diri ----
-  $('data-go').onclick = () => {
-    const nm = $('nm').value.trim(), kl = $('kl').value.trim();
-    if (!nm || !kl) { $('data-err').textContent = 'Nama dan kelas wajib diisi.'; return; }
-    state.nama = nm; state.kelas = kl; $('data-err').textContent='';
-    $('hi').textContent = `Halo, ${nm} (${kl})`;
-    buildMenu(); show('s-menu');
-  };
-
-  // ---- 3. Menu ----
+  // ---- 1. Menu (home) ----
   function buildMenu(){
     const g = $('menu-grid'); g.innerHTML='';
     for (let lv=1; lv<=10; lv++){
@@ -218,22 +188,42 @@
       b.className = 'lvl' + (state.done.has(lv)?' done':'');
       b.innerHTML = `<span class="no">${state.done.has(lv)?'✓':lv}</span>
         <span><span class="t">Level ${lv}</span><br><span class="s">${TOPICS[lv-1]}</span></span>`;
-      b.onclick = () => startLevel(lv);
+      b.onclick = () => selectLevel(lv);
       g.appendChild(b);
     }
   }
 
-  // ---- 4. Tes ----
-  async function startLevel(lv){
+  // ---- 2. Pilih level -> layar kode akses + data ----
+  function selectLevel(lv){
     state.level = lv;
+    $('start-title').textContent = `Level ${lv} — ${TOPICS[lv-1]}`;
+    $('nm').value = state.nama; $('kl').value = state.kelas; $('pw').value = '';
+    $('start-err').textContent = '';
+    show('s-start'); $('pw').focus();
+  }
+  $('start-back').onclick = () => show('s-menu');
+  $('kl').addEventListener('keydown', e => { if(e.key==='Enter') $('start-go').click(); });
+
+  // ---- 3. Mulai ujian: validasi kode + ambil soal ----
+  $('start-go').onclick = doStart;
+  async function doStart(){
+    const code = $('pw').value.trim(), nm = $('nm').value.trim(), kl = $('kl').value.trim();
+    if (!code) { $('start-err').textContent = 'Masukkan kode akses.'; return; }
+    if (!nm || !kl) { $('start-err').textContent = 'Nama dan kelas wajib diisi.'; return; }
+    state.password = code; state.nama = nm; state.kelas = kl; $('start-err').textContent = '';
+    const lv = state.level;
     if (CFG.workerUrl) {                             // mode server: ambil soal dari Worker
-      const res = await api('start', { password: state.password, level: lv });
-      if (!res.ok) { alert(res.error || 'Gagal memulai ujian.'); if (res.status === 403) show('s-gate'); return; }
+      $('start-go').disabled = true;
+      const res = await api('start', { password: code, level: lv });
+      $('start-go').disabled = false;
+      if (!res.ok) { $('start-err').textContent = (res.status === 403)
+        ? 'Kode akses salah atau sudah kedaluwarsa. Minta kode terbaru kepada pengawas.'
+        : (res.error || 'Gagal memulai ujian.'); return; }
       state.seed = res.seed; state.sent = res.test;
     } else {                                         // mode lokal: generator di browser
       state.seed = (Math.random() * 4294967295) >>> 0;
       const L = window['LEVEL'+lv];
-      state.sent = L.stripAnswers(L.generateTest(state.seed)); // soal tanpa kunci
+      state.sent = L.stripAnswers(L.generateTest(state.seed));
     }
     $('test-title').textContent = `Level ${lv} — ${TOPICS[lv-1]}`;
     renderTest(state.sent);
@@ -349,6 +339,8 @@
     show('s-cert');
   };
   $('cert-back').onclick = () => { buildMenu(); show('s-menu'); };
+
+  buildMenu(); // tampilkan menu saat halaman dibuka
 })();
 </script>
 </body>
